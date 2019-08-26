@@ -2,12 +2,15 @@
 use 5.16.0;
 use strict;
 use warnings;
+
 # -----------
 use utf8;
 use DDP;
+
 # ---------------------------------
 use JSON::XS;
 use Term::ANSIColor qw(:constants);
+
 # ---------------------------------
 use lib '.';
 
@@ -17,15 +20,19 @@ use Config::BipartiteNConfig;
 
 use SSH;
 use Job;
+
 # ----------------------
 use POSIX ":sys_wait_h";
 use Socket;
+
 # -----------------------------------
 use constant SECTION  => 'Bipartite_n_g';
 use constant MAX_JOBS => 3;
 use constant TIMEOUT  => 3;
+
 # -------------------------
 require "sys/ioctl.ph";
+
 # -------------------------
 # use IO::Handle;    # thousands of lines just for autoflush :-(
 # ----------------------------------
@@ -37,117 +44,44 @@ my $login = $cfg->param('name');
 my $pass  = $cfg->param('pass');
 my $host  = $cfg->param('host');
 
-my $ssh_runner = SSH->new(host => $host, user => $login, pass => $pass);
+my $ssh_runner = SSH->new( host => $host, user => $login, pass => $pass );
+
 # ---------------------------------------------------------
 
-# -------------------------------------------------------------
-sub cancel_jobs {
-    $ssh_runner->{break_loop} = 1;
-
-    $ssh_runner->CANCEL();
-
-    print BOLD, GREEN, "\n\nAll tasks are canceled\n\n", RESET;
-
-    $ssh_runner->disconnect();
-
-    exit(0);
-}
-# -------------------------------------------------------------
 
 # -------------------------
 $ssh_runner->connect();
 
 $ssh_runner->CANCEL();
 
-$ssh_runner->cd('_scratch/MAGMA');
+# $ssh_runner->cd('_scratch/MAGMA');
 
 p $ssh_runner->ls();
+p $ssh_runner->TEST();
+p $ssh_runner->GPUTEST();
+
+p $ssh_runner->receive_files('_scratch/test.py', 'test.py');
+
 exit(0);
-
-p $ssh_runner->exec('make compile_bp_n_g');
-# ---------------------------------------
-
-my @jobs;
 
 my $id = 0;
 
-my $mks = 1e-6;
-my $RWA = 1e-2;
+my @jobs;
+my $job = new Job(
+    N          => 1,
+    queue      => 'test',
+    output     => 'test.out',
+    sc_out_dir => '_scratch',
+    pc_out_dir => '.',
+    mode       => 'run',
+    x_file     => 'test.py',
+    path    => "_scratch",
+    status  => 'None',
+    id      => $id++,
+    task_id => -1
+);
 
-my @n = (11 .. 50);
-
-my @wc = (21.506);    # MHz
-my @wa = (21.506);    # MHz
-
-my @g = map {$_ / 20 } 1..20;    # MHz
-
-my @T = (0.5);              # mks
-
-my @nt = (20000);
-
-my $out         = 'out';
-my $out_pc_root = '/home/alexfmsu/Quant/C++/' . SECTION . '/' . $out;
-
-for my $n (@n) {
-    for my $capacity ($n) {
-        for my $wc (@wc) {
-            for my $wa (@wa) {
-                for my $g (@g) {
-                    for my $T (@T) {
-                        print $g;
-
-                        my $config_path = './config';
-
-                        my $out_path = "$n\_$g";
-
-                        my $nt = '20000';
-
-                        my $init_state = '[' . 0 . ', ' . $n . ']';
-
-                        my $config_filename = "$n\_$g";
-
-                        my $conf = Config::BipartiteNConfig->new(
-                            capacity => $capacity,
-                            n        => $n,
-                            wc       => $wc . ' * GHz',
-                            wa       => $wa . ' * GHz',
-                            g        => ($g * 21.506 * 1e-2) . ' * GHz',
-                            T        => $T . ' * mks',
-                            # dt       => $dt,
-                            nt         => int($T * $nt),
-                            dt         => 'T / ' . int($T * $nt),
-                            init_state => $init_state,
-                            precision  => 50,
-                            path => '"' . SECTION . '/' . $out . '/' . $out_path . '/' . $config_filename . '/"'
-                        );
-
-                        $conf->write_to_file($config_path . "/" . $config_filename);
-
-                        $ssh_runner->send_files($config_path . "/" . $config_filename, SECTION . '/Config/' . $out_path . '/' . $config_filename);
-
-                        my $job = new Job(
-                            N      => 1,
-                            queue  => 'gputest',
-                            output => 'bp_n_g.out',
-                            sc_out_dir => SECTION . '/' . $out . '/' . $out_path . '/' . $config_filename,
-                            pc_out_dir => $out_pc_root . '_2/' . $out_path,
-                            mode       => 'run',
-                            x_file     => 'bin/bp_n_g.x ' . SECTION . '/' . 'Config' . '/' . $out_path . '/' . $config_filename,
-                            path       => "_scratch/MAGMA/",
-                            status     => 'None',
-                            id         => $id++,
-                            task_id    => -1
-                        );
-
-                        `rm -r $job->{pc_out_dir} 2>/dev/null || true`;
-
-                        push @jobs, $job;
-                    }
-                }
-            }
-        }
-    }
-}
+push @jobs, $job;
 
 socketpair(my $CHILD, my $PARENT, AF_UNIX, SOCK_STREAM, PF_UNSPEC) || die "socketpair: $!";
 
@@ -159,7 +93,8 @@ $| = 1;
 if (my $pid = fork()) {
     close($PARENT);
 
-    $SIG{INT} = \&cancel_jobs;
+    # $SIG{INT} = \&cancel_jobs;
+    $SIG{INT} = $ssh_runner->cancel_jobs();
 
     my $json = JSON::XS->new();
 

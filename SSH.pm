@@ -6,15 +6,17 @@ use warnings;
 use utf8;
 use DDP;
 
+no warnings "experimental";
+
 use Net::SSH2;
-use Net::SFTP::Foreign;
 use Term::ANSIColor;
 
 use lib '.';
 
 use Commands;
 
-no warnings "experimental";
+require 'Queue.pl';
+require 'SFTP.pl';
 
 our %timeout = (
     regular4 => 10,
@@ -47,46 +49,10 @@ sub connect {
     $self->{sftp} = Net::SFTP::Foreign->new(
         host       => $self->{user} . '@' . $self->{host},
         passphrase => $self->{passphrase},
-        key_path   => "/home/alexfmsu/lomonosov/lomonosov_1.ppk"
+        # key_path   => "/home/alexfmsu/lomonosov/lomonosov_1.ppk"
     ) or die $!;
 }
 
-sub readlines {
-    my ( $self, $chan ) = @_;
-
-    my @poll = {
-        handle => $self->{chan},
-        events => [qw/in err/],
-    };
-
-    my ( $stdout, $stderr ) = ( '', '' );
-
-    my ( @out, @err );
-
-    while (1) {
-        $self->{ssh}->poll( 250, \@poll );
-
-        while ( my $stdout = $self->{chan}->readline(0) ) {
-            push @out, $stdout;
-        }
-
-        while ( $stderr = $self->{chan}->readline(1) ) {
-            push @err, $stderr;
-        }
-
-        last if $self->{chan}->eof;
-    }
-
-    # if (@err) {
-    #     p @err;
-
-    #     print color('bold red');
-    #     die "Commanf error";
-    #     print color('reset');
-    # }
-
-    return ( \@out, \@err );
-}
 
 sub disconnect {
     my $self = shift;
@@ -142,30 +108,6 @@ sub readlines2 {
     return ( \@out, \@err );
 }
 
-sub TEST {
-    my $self = shift;
-
-    my ($o, $e) = $self->cmd('squeue -p test');
-
-    return $o;
-}
-
-sub MY {
-    my $self = shift;
-
-    my ($o, $e) = $self->cmd('squeue -u $USER');
-
-    return $o;
-}
-
-sub CANCEL {
-    my $self = shift;
-
-    my ($o, $e) = $self->cmd('scancel -u $USER');
-
-    return $o;
-}
-
 sub TASKS {
     my $self = shift;
 
@@ -195,25 +137,6 @@ sub TASKS {
     }
 
     return \@tasks;
-}
-
-sub sbatch_cmd {
-    my ( $self, %args ) = @_;
-
-    $self->{queue} = $args{squeue};
-
-    my $cmd
-        = "cd "
-        . $self->{path} . " && "
-        . 'sbatch -n '
-        . $args{n} . ' -p '
-        . $args{squeue} . ' '
-        . '--output='
-        . $args{output} . ' '
-        . $args{mode} . ' '
-        . $args{x_file};
-
-    return $cmd;
 }
 
 sub sbatch {
@@ -331,6 +254,10 @@ sub add_task($$) {
 sub print_tasks($) {
     my $self = shift;
 
+    print color('bold blue');
+    say "\t", 'JOBID', ' ', 'TASK_ID', ' ', 'STATUS', 'PC_OUTDIR';
+    print color('reset');
+
     for my $job ( @{ $self->{jobs} } ) {
         if ( $job->{task_id} != -1 ) {
             say "\t", $job->{id}, ' ', $job->{task_id}, ' ', $job->{status}, $job->{pc_out_dir};
@@ -340,25 +267,80 @@ sub print_tasks($) {
     say '';
 }
 
-sub receive_files {
-    my ( $self, $from_path, $to_path ) = @_;
+# -------------------------------------------------------------
+sub cancel_jobs {
+    my $self = shift;
 
-    $to_path ||= $from_path;
+    # $ssh_runner
+    $self->{break_loop} = 1;
 
-    $self->{sftp}->rget( $self->{path} . "/" . $from_path, $to_path )
-        or do {
-        print color('bold red');
+    $self->CANCEL();
 
-        die "Error: NOTHING TO RECEIVE\n";
-        print color('reset');
-        };
+    # print BOLD, GREEN, "\n\nAll tasks are canceled\n\n", RESET;
+
+    $self->disconnect();
+
+    exit(0);
 }
 
-sub send_files {
-    my ( $self, $from_path, $to_path ) = @_;
-
-    $self->{sftp}->rput( $from_path, $self->{path} . "/" . $to_path )
-        or say "File $from_path not found" . $!;
-}
+# -------------------------------------------------------------
 
 1;
+
+# =====================================================================================================================
+# sub readlines {
+#     my ( $self, $chan ) = @_;
+
+#     my @poll = {
+#         handle => $self->{chan},
+#         events => [qw/in err/],
+#     };
+
+#     my ( $stdout, $stderr ) = ( '', '' );
+
+#     my ( @out, @err );
+
+#     while (1) {
+#         $self->{ssh}->poll( 250, \@poll );
+
+#         while ( my $stdout = $self->{chan}->readline(0) ) {
+#             push @out, $stdout;
+#         }
+
+#         while ( $stderr = $self->{chan}->readline(1) ) {
+#             push @err, $stderr;
+#         }
+
+#         last if $self->{chan}->eof;
+#     }
+
+#     # if (@err) {
+#     #     p @err;
+
+#     #     print color('bold red');
+#     #     die "Commanf error";
+#     #     print color('reset');
+#     # }
+
+#     return ( \@out, \@err );
+# }
+# =====================================================================================================================
+# sub sbatch_cmd {
+#     my ( $self, %args ) = @_;
+
+#     $self->{queue} = $args{squeue};
+
+#     my $cmd
+#         = "cd "
+#         . $self->{path} . " && "
+#         . 'sbatch -n '
+#         . $args{n} . ' -p '
+#         . $args{squeue} . ' '
+#         . '--output='
+#         . $args{output} . ' '
+#         . $args{mode} . ' '
+#         . $args{x_file};
+
+#     return $cmd;
+# }
+# =====================================================================================================================
