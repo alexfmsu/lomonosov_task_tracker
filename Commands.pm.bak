@@ -6,6 +6,7 @@ use warnings;
 use utf8;
 
 sub cmd {
+
     # -------------------------------------
     # NOT DONE
     # -------------------------------------
@@ -13,7 +14,7 @@ sub cmd {
     # -------------------------------------
     # EXAMPLE:
     # -------------------------------------
-    my ($self, $cmd) = @_;
+    my ( $self, $cmd ) = @_;
 
     $self->{ssh}->blocking(1);
     $self->{chan} = $self->{ssh}->channel;
@@ -26,6 +27,7 @@ sub cmd {
 }
 
 sub cd {
+
     # -------------------------------------
     # NOT DONE
     # -------------------------------------
@@ -33,9 +35,9 @@ sub cd {
     # -------------------------------------
     # EXAMPLE:
     # -------------------------------------
-    my ($self, $path) = @_;
+    my ( $self, $path ) = @_;
 
-    my ($o, $e) = $self->exec("cd $path && pwd");
+    my ( $o, $e ) = $self->exec("cd $path && pwd");
 
     return $e->[0] if @$e;
 
@@ -45,6 +47,7 @@ sub cd {
 }
 
 sub ls($) {
+
     # -------------------------------------
     # NOT DONE
     # -------------------------------------
@@ -58,17 +61,17 @@ sub ls($) {
     # -------------------------------------
     my $self = shift;
 
-    my ($o, $e) = $self->exec('ls');    # ?
+    my ( $o, $e ) = $self->exec('ls2');    # ?
 
-    return join('\n', @$e) if @$e;
+    return join( '\n', @$e ) if @$e;
 
     return $o;
 }
 
 sub rm {
-    my ($self, $file) = @_;
+    my ( $self, $file ) = @_;
 
-    my ($o, $e) = $self->exec("rm $file");
+    my ( $o, $e ) = $self->exec("rm $file");
 
     return $e->[0] if @$e;
 

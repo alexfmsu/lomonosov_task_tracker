@@ -53,7 +53,6 @@ sub connect {
     ) or die $!;
 }
 
-
 sub disconnect {
     my $self = shift;
 
@@ -61,7 +60,7 @@ sub disconnect {
     $self->{chan}->close;
 }
 
-sub readlines2 {
+sub readlines {
     my $self = shift;
 
     my ( $stdout, $stderr ) = ( '', '' );
@@ -129,10 +128,24 @@ sub TASKS {
             (?<user>[\d\w]+)
             \s+
             (?<status>[\d\w]+)
+            \s+
+            (?<time>\d+\:\d+)
+            \s+
+            (?<cpus>\d+)
+            \s+
+            (?<node>\d+)
+            \s+
             }x
             )
         {
-            push @tasks, { id => $+{id}, status => $+{status} };
+            push @tasks,
+                {
+                id     => $+{id},
+                status => $+{status},
+                time   => $+{time},
+                cpus   => $+{cpus},
+                node   => $+{node}
+                };
         }
     }
 
@@ -144,20 +157,7 @@ sub sbatch {
 
     $self->{queue} = $job->{queue};
 
-    # my $cmd
-    #     = "cd "
-    #     . $self->{path} . " && "
-    #     . 'sbatch -n '
-    #     . $args{n} . ' -p '
-    #     . $args{squeue} . ' '
-    #     . '--output='
-    #     . $args{output} . ' '
-    #     . $args{mode} . ' '
-    #     . $args{x_file};
-
-    say $job->cmd() . "\n";
-
-    my ($o, $e) = $self->cmd( $job->cmd() );
+    my ( $o, $e ) = $self->cmd( $job->sbatch() );
 
     for (@$o) {
         if (/^Submitted\sbatch\sjob\s(\d+)$/) {
@@ -192,12 +192,17 @@ sub task_exist {
     return 0;
 }
 
-sub task_status {
+sub task_info {
     my ( $self, $task_id ) = @_;
 
     for ( @{ $self->TASKS() } ) {
         if ( $task_id == $_->{id} ) {
-            return $_->{status};
+            return {
+                status => $_->{status},
+                cpus   => $_->{cpus},
+                node   => $_->{node},
+                time   => $_->{time}
+            };
         }
     }
 
@@ -247,24 +252,32 @@ sub add_task($$) {
     my ( $self, $job ) = @_;
 
     push @{ $self->{jobs} }, $job;
-
-    # p $self->{jobs};
 }
 
 sub print_tasks($) {
     my $self = shift;
 
-    print color('bold blue');
-    say "\t", 'JOBID', ' ', 'TASK_ID', ' ', 'STATUS', 'PC_OUTDIR';
-    print color('reset');
+ # JOBID PARTITION     NAME     USER ST       TIME  CPUS NODE NODELIST(REASON)
+    if ( @{ $self->{jobs} } ) {
+        print color('bold blue');
+        say "\t", 'JOB_ID', "\t", 'TASK_ID', "\t", 'CPUS', "\t", 'NODE', "\t",
+            'STATUS', "\t", "TIME", "\t", 'PC_OUTDIR';
+        print color('reset');
 
-    for my $job ( @{ $self->{jobs} } ) {
-        if ( $job->{task_id} != -1 ) {
-            say "\t", $job->{id}, ' ', $job->{task_id}, ' ', $job->{status}, $job->{pc_out_dir};
+        for my $job ( @{ $self->{jobs} } ) {
+            if ( $job->{task_id} != -1 && defined( $job->{status} ) ) {
+                say "\t", $job->{id},
+                    "\t", $job->{task_id},
+                    "\t", $job->{cpus},
+                    "\t", $job->{node},
+                    "\t", $job->{status},
+                    "\t", $job->{time},
+                    "\t", $job->{pc_out_dir};
+            }
         }
-    }
 
-    say '';
+        say '';
+    }
 }
 
 # -------------------------------------------------------------
@@ -275,6 +288,10 @@ sub cancel_jobs {
     $self->{break_loop} = 1;
 
     $self->CANCEL();
+
+    print color('bold green');
+    print "\n\nAll tasks are canceled\n\n";
+    print color('reset');
 
     # print BOLD, GREEN, "\n\nAll tasks are canceled\n\n", RESET;
 
@@ -342,5 +359,22 @@ sub cancel_jobs {
 #         . $args{x_file};
 
 #     return $cmd;
+# }
+# =====================================================================================================================
+# sub task_status {
+#     my ( $self, $task_id ) = @_;
+
+#     # p @{ $self->MY() };
+#     # p @{ $self->TASKS() };
+
+#     for ( @{ $self->TASKS() } ) {
+#         if ( $task_id == $_->{id} ) {
+#             return $_->{status};
+#         }
+#     }
+
+#     # warn "No such task\n";
+
+#     undef;
 # }
 # =====================================================================================================================

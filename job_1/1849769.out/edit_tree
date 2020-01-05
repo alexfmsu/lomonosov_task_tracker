@@ -1,0 +1,206 @@
+.
+├── 3d.py
+├── article.py
+├── avg.py
+├── bin
+│   ├── config.py
+│   ├── run_bpg_l.py
+│   ├── run_bpg.py
+│   ├── run_bp_l.py
+│   ├── run_bp.py
+│   ├── run_tc_l.py
+│   ├── run_tc.py
+│   ├── run_tc_ro.py
+│   └── TCH_Full.py
+├── Bipartite
+│   └── config.py
+├── BipartiteGeneral
+├── BipartiteLindblad
+├── dark_cmp.pl
+├── DarkStates.py
+├── DarkSystem.py
+├── DarkSystemSparse.py
+├── dense_dark_matrix.py
+├── edit
+├── edit_tree
+├── edit_tree_fin
+├── __imp.py
+├── ipynb
+│   ├── Bipartite
+│   ├── bpg.ipynb
+│   ├── bpg_l.ipynb
+│   ├── bpgl.ipynb
+│   ├── bp.ipynb
+│   ├── bp_l.ipynb
+│   ├── TC.ipynb
+│   └── TCM_Full.ipynb
+├── many_cv.py
+├── plot3d_example.py
+├── plot_all.py
+├── plot_M3D.py
+├── plot_M_diff.py
+├── plot_M.py
+├── plot_p.py
+├── plot_sink.py
+├── p.py
+├── PyQuantum
+│   ├── Base
+│   │   └── BaseCavity.py
+│   ├── Bipartite
+│   │   ├── Cavity.py
+│   │   ├── Config
+│   │   │   ├── 1
+│   │   │   ├── 10
+│   │   │   ├── 15
+│   │   │   ├── 20
+│   │   │   ├── 25
+│   │   │   └── 5
+│   │   ├── config2.py
+│   │   ├── config_backup.py
+│   │   ├── config.py
+│   │   ├── DensityMatrix.py
+│   │   ├── Evolution.py
+│   │   ├── FormHandler.py
+│   │   ├── Hamiltonian.py
+│   │   ├── make_config.py
+│   │   ├── run.py
+│   │   ├── Unitary.py
+│   │   └── WaveFunction.py
+│   ├── BipartiteGeneral
+│   │   ├── Cavity.py
+│   │   ├── config.py
+│   │   ├── DensityMatrix.py
+│   │   ├── Evolution.py
+│   │   ├── Hamiltonian.py
+│   │   ├── Unitary.py
+│   │   └── WaveFunction.py
+│   ├── BipartiteGeneralLindblad
+│   │   ├── Cavity.py
+│   │   ├── config.py
+│   │   ├── DensityMatrix.py
+│   │   ├── Evolution.py
+│   │   ├── Hamiltonian.py
+│   │   ├── Unitary.py
+│   │   └── WaveFunction.py
+│   ├── BipartiteLindblad
+│   │   ├── Cavity.py
+│   │   ├── config.py
+│   │   ├── DensityMatrix.py
+│   │   ├── Evolution.py
+│   │   ├── Hamiltonian.py
+│   │   ├── Unitary.py
+│   │   └── WaveFunction.py
+│   ├── Common
+│   │   ├── C_n_k.py
+│   │   ├── Fidelity.py
+│   │   ├── html.py
+│   │   ├── LoadPackage.py
+│   │   ├── Matrix.py
+│   │   ├── PyPlot3dng.py
+│   │   ├── PyPlot3d.py
+│   │   ├── PyPlot.py
+│   │   ├── Quantum
+│   │   │   ├── Fidelity.py
+│   │   │   └── Operators.py
+│   │   ├── SparseMatrix
+│   │   │   ├── ItemHandler.py
+│   │   │   ├── operators.py
+│   │   │   ├── Print.py
+│   │   │   ├── RowsHandler.py
+│   │   │   ├── SparseMatrix.py
+│   │   │   └── stuff.py
+│   │   ├── STR.py
+│   │   └── Tools.py
+│   ├── DarkState
+│   │   ├── config.py
+│   │   ├── D3.py
+│   │   ├── data
+│   │   ├── operators.py
+│   │   ├── Permutations.py
+│   │   ├── qudit.py
+│   │   └── state.py
+│   ├── examples
+│   │   ├── Bipartite
+│   │   │   └── config.py
+│   │   ├── BipartiteLindblad
+│   │   │   └── config.py
+│   │   ├── run_bpl.py
+│   │   ├── run_bp.py
+│   │   └── TC
+│   │       └── config.py
+│   ├── PlotBuilder
+│   │   └── PlotBuilder3D.py
+│   ├── py2.py
+│   ├── TC
+│   │   ├── animator.py
+│   │   ├── AtomicBase.py
+│   │   ├── Basis.py
+│   │   ├── Cavity.py
+│   │   ├── config.py
+│   │   ├── DensityMatrix.py
+│   │   ├── Evolution.py
+│   │   ├── FullBase.py
+│   │   ├── Hamiltonian.py
+│   │   ├── old
+│   │   │   ├── Hamiltonian_naive.py
+│   │   │   ├── Hamiltonian.py
+│   │   │   └── HamiltonianTC.py
+│   │   ├── PlotBuilder3D.py
+│   │   ├── State.py
+│   │   ├── Unitary.py
+│   │   └── WaveFunction.py
+│   ├── TC_Lindblad
+│   │   ├── Cavity.py
+│   │   ├── config.py
+│   │   ├── DensityMatrix.py
+│   │   ├── Evolution.py
+│   │   ├── Hamiltonian.py
+│   │   ├── Unitary.py
+│   │   └── WaveFunction.py
+│   └── Tools
+│       ├── Assert.py
+│       ├── CartesianProduct.py
+│       ├── CSV.py
+│       ├── df_dx.py
+│       ├── Hz.py
+│       ├── LoadPackage.py
+│       ├── MkDir.py
+│       ├── Pickle.py
+│       ├── PlotBuilder2D.py
+│       ├── PlotBuilder3D.py
+│       ├── Print.py
+│       └── Units.py
+├── rnd.py
+├── _run_
+│   └── run_tc_wf.py
+├── run_bp.py
+├── run.sh
+├── run_tests.pl
+├── singlet2.py
+├── singlet_N
+├── singlet.py
+├── sink3d_mpi.py
+├── sink3d.py
+├── __sink_g_l.py
+├── sink.py
+├── sparse_dark_matrix.py
+├── spm.py
+├── test
+│   ├── test_tc
+│   │   └── tc_config.py
+│   ├── test_tcl
+│   │   ├── tc_config.py
+│   │   └── tcl_config.py
+│   ├── test_tcl.pl
+│   └── test_tc.pl
+├── test_cavity.py
+├── test_rank.py
+├── tests_rank.py
+├── tocsv.py
+└── tt
+    ├── Untitled1.ipynb
+    ├── Untitled2.ipynb
+    ├── Untitled6.ipynb
+    └── Untitled.ipynb
+
+32 directories, 171 files
