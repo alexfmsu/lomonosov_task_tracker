@@ -51,6 +51,8 @@ sub connect {
         passphrase => $self->{passphrase},
         # key_path   => "/home/alexfmsu/lomonosov/lomonosov_1.ppk"
     ) or die $!;
+
+    $self->cd($self->{rootdir});
 }
 
 sub disconnect {

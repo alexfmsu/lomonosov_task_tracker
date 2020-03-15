@@ -4,6 +4,8 @@ use 5.16.0;
 use strict;
 use warnings;
 
+use DDP;
+
 use Moose;
 
 has [
@@ -52,9 +54,8 @@ sub sbatch {
 
 sub print{
     my $self = shift;
-    # say $self->{N};
-    say 'p: ', $self->{queue};
-    say 'n: ', $self->{n};
+    
+    p $self;
 }
 
 1;
