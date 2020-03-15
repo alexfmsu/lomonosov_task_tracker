@@ -1,3 +1,3 @@
-*.* linguist-language=Perl
+*.* linguist-language=Perl, Python
 #*.pm linguist-language=Perl
 *.html linguist-detectable=false
